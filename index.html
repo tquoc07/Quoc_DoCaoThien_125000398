@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFC Việt Nam - Gà Rán Giòn Tan & Đặt Món Trực Tuyến</title>
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kfc: {
+                            red: '#E4002B',
+                            redHover: '#C00024',
+                            dark: '#202124',
+                            grayBg: '#F8F9FA',
+                            cardBorder: '#E8EAED'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #E4002B; }
+        
+        /* KFC Signature Stripe pattern */
+        .kfc-stripes {
+            background: repeating-linear-gradient(
+                -45deg,
+                #E4002B,
+                #E4002B 12px,
+                #ffffff 12px,
+                #ffffff 24px
+            );
+        }
+    </style>
+</head>
+<body class="bg-kfc-grayBg text-slate-800 antialiased flex flex-col min-h-screen">
+
+    <!-- Image Error Fallback Handler -->
+    <script>
+        const FALLBACK_IMG = "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=80";
+        function handleImgError(img) {
+            img.onerror = null;
+            img.src = FALLBACK_IMG;
+        }
+    </script>
+
+    <!-- Top Header Banner Stripes -->
+    <div class="h-1.5 kfc-stripes w-full"></div>
+
+    <!-- ==================== HEADER & NAVBAR ==================== -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="filterByCategory('all')">
+                    <div class="w-12 h-12 bg-kfc-red rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-red-500/30 transform hover:scale-105 transition-transform tracking-tighter">
+                        KFC
+                    </div>
+                    <div>
+                        <span class="text-2xl font-black text-kfc-red tracking-tight block leading-none font-sans">KFC</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vị Giòn Dạo Ấy</span>
+                    </div>
+                </div>
+
+                <!-- Live Search Bar (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8 relative">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Tìm Zinger, Combo Gia Đình, Bánh Trứng..." 
+                        class="w-full pl-11 pr-4 py-2.5 bg-slate-100 border border-transparent rounded-full focus:outline-none focus:bg-white focus:border-kfc-red focus:ring-4 focus:ring-red-500/10 text-xs sm:text-sm transition-all"
+                        oninput="handleSearch()"
+                    >
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-4 top-3.5 text-sm"></i>
+                </div>
+
+                <!-- Header Actions -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Call Hotline -->
+                    <a href="tel:19006886" class="hidden lg:flex items-center space-x-2 text-slate-700 hover:text-kfc-red px-3 py-2 rounded-xl transition-colors">
+                        <div class="w-9 h-9 rounded-full bg-red-50 text-kfc-red flex items-center justify-center">
+                            <i class="fa-solid fa-headset text-sm"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-[9px] uppercase tracking-wider text-slate-400 font-bold">Tổng Đài Giao Hàng</span>
+                            <span class="text-xs font-black text-slate-900">1900 6886</span>
+                        </div>
+                    </a>
+
+                    <!-- Cart Trigger Button -->
+                    <button 
+                        onclick="toggleCartModal(true)" 
+                        class="relative p-3.5 bg-kfc-dark hover:bg-kfc-red text-white rounded-2xl shadow-md transition-all duration-200 active:scale-95 flex items-center justify-center group"
+                        aria-label="Giỏ hàng KFC"
+                    >
+                        <i class="fa-solid fa-bucket text-base group-hover:rotate-6 transition-transform"></i>
+                        <span id="cartBadge" class="absolute -top-1.5 -right-1.5 bg-kfc-red text-white font-black text-[11px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md scale-0 transition-transform duration-200">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Search Bar -->
+            <div class="pb-3 md:hidden">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="mobileSearchInput" 
+                        placeholder="Tìm gà giòn cay, burger, combo..." 
+                        class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-kfc-red text-xs"
+                        oninput="handleMobileSearch()"
+                    >
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3.5 top-2.5 text-xs"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== HERO PROMO BANNER ==================== -->
+    <section class="bg-gradient-to-r from-slate-900 via-kfc-dark to-slate-900 text-white py-10 lg:py-14 border-b border-slate-800 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                
+                <div class="lg:col-span-7 space-y-4 text-center lg:text-left">
+                    <div class="inline-flex items-center space-x-2 bg-kfc-red text-white px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">
+                        <i class="fa-solid fa-fire text-amber-300"></i>
+                        <span>Ưu Đãi Độc Quyền KFC Việt Nam</span>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl font-black tracking-tight uppercase font-sans leading-tight">
+                        Vị Giòn Tan <span class="text-kfc-red">Đậm Vị</span> Thơm Ngon Nức Mũi
+                    </h1>
+
+                    <p class="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        Thưởng thức các món Gà Giòn Cay, Burger Zinger thần thánh cùng Bánh Trứng KFC trứ danh. Đặt hàng ngay giao hỏa tốc 30 phút!
+                    </p>
+
+                    <div class="pt-2 flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-6 text-xs font-bold text-slate-300">
+                        <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10">
+                            <i class="fa-solid fa-truck-fast text-kfc-red text-sm"></i>
+                            <span>Giao siêu tốc 30P</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10">
+                            <i class="fa-solid fa-drumstick-bite text-amber-400 text-sm"></i>
+                            <span>Gà Tươi 100% Tinh Chọn</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Showcase Cards -->
+                <div class="lg:col-span-5 hidden lg:grid grid-cols-2 gap-4">
+                    <div class="rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative group cursor-pointer" onclick="openDetailModal(1)">
+                        <img src="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=600&q=80" alt="Gà Giòn Cay" onerror="handleImgError(this)" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end">
+                            <span class="text-[10px] bg-kfc-red font-black text-white px-2 py-0.5 rounded w-max">Best Seller</span>
+                            <span class="text-xs font-black text-white mt-1">Gà Giòn Cay KFC</span>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative group cursor-pointer" onclick="openDetailModal(11)">
+                        <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80" alt="Burger Zinger" onerror="handleImgError(this)" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end">
+                            <span class="text-[10px] bg-amber-500 font-black text-white px-2 py-0.5 rounded w-max">Khuyên Dùng</span>
+                            <span class="text-xs font-black text-white mt-1">Burger Zinger</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CATEGORY TABS ==================== -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase flex items-center space-x-2">
+                    <span>Thực Đơn KFC Việt Nam</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-kfc-red"></span>
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">Chọn danh mục yêu thích để đặt món nhanh chóng</p>
+            </div>
+
+            <!-- Categories Buttons -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none" id="categoryFilterButtons">
+                <!-- Dynamic tabs JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PRODUCT GRID ==================== -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 flex-1">
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Dynamic products JS -->
+        </div>
+
+        <!-- Empty Search Result -->
+        <div id="emptyState" class="hidden text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200 mt-4">
+            <div class="w-16 h-16 mx-auto bg-red-50 text-kfc-red rounded-full flex items-center justify-center mb-3 text-2xl">
+                <i class="fa-solid fa-utensils"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">Không tìm thấy món ăn phù hợp</h3>
+            <p class="text-slate-500 text-xs mt-1">Vui lòng thử tìm từ khóa khác hoặc chuyển danh mục.</p>
+            <button onclick="filterByCategory('all')" class="mt-4 px-5 py-2.5 bg-kfc-red text-white rounded-xl text-xs font-bold hover:bg-kfc-redHover transition-colors shadow-md">
+                Xem Tất Cả Món KFC
+            </button>
+        </div>
+    </main>
+
+    <!-- ==================== ITEM DETAIL MODAL ==================== -->
+    <div id="itemDetailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl transform transition-all duration-300 scale-95 opacity-0 my-8" id="detailModalCard">
+            
+            <div class="relative h-64 sm:h-72">
+                <img id="detailImg" src="" alt="" onerror="handleImgError(this)" class="w-full h-full object-cover">
+                <button onclick="closeDetailModal()" class="absolute top-4 right-4 bg-white/90 hover:bg-white text-slate-800 w-9 h-9 rounded-full shadow-md transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+                <div class="absolute bottom-4 left-4">
+                    <span id="detailCategoryBadge" class="px-3 py-1 bg-kfc-red text-white font-black text-[10px] uppercase tracking-wider rounded-full shadow"></span>
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 id="detailTitle" class="text-2xl font-black text-slate-900"></h3>
+                        <p id="detailEngTitle" class="text-xs text-slate-400 italic mt-0.5"></p>
+                    </div>
+                    <div id="detailPrice" class="text-2xl font-black text-kfc-red"></div>
+                </div>
+
+                <p id="detailDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
+
+                <!-- Flavor / Flavor Option Choice (if applicable) -->
+                <div id="flavorOptionContainer" class="hidden space-y-2 pt-2 border-t border-slate-100">
+                    <label class="block text-xs font-black uppercase text-slate-700 tracking-wider">Tùy Chọn Khẩu Vị Gà *</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center space-x-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-red-50/50 hover:border-kfc-red transition-all">
+                            <input type="radio" name="flavorChoice" value="Giòn Cay" checked class="text-kfc-red focus:ring-kfc-red">
+                            <span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-pepper-hot text-red-500 mr-1"></i> Gà Giòn Cay</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-red-50/50 hover:border-kfc-red transition-all">
+                            <input type="radio" name="flavorChoice" value="Truyền Thống" class="text-kfc-red focus:ring-kfc-red">
+                            <span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-drumstick-bite text-amber-600 mr-1"></i> Truyền Thống</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Quantity Selector & Special Instruction -->
+                <div class="space-y-3 pt-2">
+                    <div>
+                        <label class="block text-xs font-black uppercase text-slate-700 tracking-wider mb-1">Ghi chú đặc biệt</label>
+                        <input type="text" id="specialNote" placeholder="Ví dụ: Cho thêm tương cà, lấy tương ớt..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-kfc-red">
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <span class="text-xs font-black uppercase text-slate-700 tracking-wider">Số Lượng:</span>
+                        <div class="flex items-center space-x-3 bg-slate-100 p-1.5 rounded-2xl">
+                            <button onclick="changeDetailQty(-1)" class="w-8 h-8 bg-white rounded-xl shadow-xs flex items-center justify-center font-bold text-slate-700 hover:bg-slate-200 text-sm">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <span id="detailQty" class="text-sm font-black text-slate-900 w-6 text-center">1</span>
+                            <button onclick="changeDetailQty(1)" class="w-8 h-8 bg-white rounded-xl shadow-xs flex items-center justify-center font-bold text-slate-700 hover:bg-slate-200 text-sm">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Submit -->
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="block text-[10px] text-slate-400 font-bold uppercase">Tổng món này</span>
+                        <span id="detailTotalCalculated" class="text-xl font-black text-kfc-red"></span>
+                    </div>
+                    <button id="detailAddToCartBtn" class="bg-kfc-red hover:bg-kfc-redHover text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-red-500/25 flex items-center space-x-2 transition-transform active:scale-95 text-xs sm:text-sm">
+                        <i class="fa-solid fa-bucket"></i>
+                        <span>Thêm Vào Giỏ KFC</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SLIDE-OVER CART SIDEBAR ==================== -->
+    <div id="cartModal" class="fixed inset-0 z-50 hidden overflow-hidden bg-slate-900/50 backdrop-blur-xs transition-opacity">
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                
+                <!-- Header -->
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-kfc-red text-white font-black text-sm rounded-xl flex items-center justify-center">KFC</div>
+                        <h2 class="text-base font-black text-slate-900 uppercase tracking-tight">Giỏ Hàng Của Bạn</h2>
+                        <span id="cartCountTitle" class="bg-red-100 text-kfc-red text-xs font-extrabold px-2.5 py-0.5 rounded-full">0 món</span>
+                    </div>
+                    <button onclick="toggleCartModal(false)" class="w-8 h-8 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-xl transition-colors flex items-center justify-center">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Items List -->
+                <div class="flex-1 overflow-y-auto p-5 space-y-4" id="cartItemsList">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="cartEmptyState" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center">
+                    <div class="w-20 h-20 bg-red-50 text-kfc-red rounded-full flex items-center justify-center mb-4 text-3xl">
+                        <i class="fa-solid fa-bucket"></i>
+                    </div>
+                    <p class="text-slate-800 font-black text-base uppercase">Giỏ Hàng Đang Trống!</p>
+                    <p class="text-slate-400 text-xs mt-1 max-w-xs">Hãy chọn ngay những miếng Gà Giòn Cay hoặc Combo giòn rụm từ KFC nhé.</p>
+                </div>
+
+                <!-- Footer Summary -->
+                <div id="cartFooter" class="p-5 border-t border-slate-100 bg-slate-50 space-y-2.5">
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>Tạm tính các món:</span>
+                        <span id="subtotalPrice" class="font-bold text-slate-800">0đ</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500">
+                        <span>Phí giao hàng cố định:</span>
+                        <span id="deliveryFeeText" class="font-bold text-slate-800">15.000đ</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-200">
+                        <span>Tổng Thanh Toán:</span>
+                        <span id="totalPrice" class="text-xl text-kfc-red font-black">0đ</span>
+                    </div>
+                    <button onclick="openCheckoutModal()" class="w-full mt-2 bg-kfc-red hover:bg-kfc-redHover text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-red-500/25 transition-all flex items-center justify-center space-x-2 text-xs sm:text-sm uppercase tracking-wider">
+                        <span>Thanh Toán Giỏ Hàng</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CHECKOUT MODAL ==================== -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative my-8">
+            <button onclick="closeCheckoutModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 bg-kfc-red text-white font-black rounded-xl flex items-center justify-center text-lg">
+                    KFC
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 uppercase">Thông Tin Giao Hàng</h3>
+                    <p class="text-xs text-slate-500">Xác nhận thông tin nhận gà KFC giao tận nơi</p>
+                </div>
+            </div>
+
+            <form id="orderForm" onsubmit="handleOrderSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-black uppercase text-slate-700 tracking-wider mb-1">Họ và tên người nhận *</label>
+                    <input type="text" id="customerName" required placeholder="Nguyễn Văn A" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-kfc-red">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black uppercase text-slate-700 tracking-wider mb-1">Số điện thoại *</label>
+                    <input type="tel" id="customerPhone" required pattern="[0-9]{10,11}" placeholder="0987654321" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-kfc-red">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black uppercase text-slate-700 tracking-wider mb-1">Địa chỉ giao hàng chi tiết *</label>
+                    <input type="text" id="customerAddress" required placeholder="Số 123 Đường Lê Lợi, Phường Bến Thành, Quận 1" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-kfc-red">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black uppercase text-slate-700 tracking-wider mb-2">Phương thức thanh toán</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-center">
+                            <input type="radio" name="paymentMethod" value="cod" checked class="text-kfc-red focus:ring-kfc-red mb-1">
+                            <i class="fa-solid fa-money-bill-1-wave text-green-600 mb-1"></i>
+                            <span class="text-[10px] font-bold text-slate-700">Tiền Mặt (COD)</span>
+                        </label>
+                        <label class="flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-center">
+                            <input type="radio" name="paymentMethod" value="bank" class="text-kfc-red focus:ring-kfc-red mb-1">
+                            <i class="fa-solid fa-qrcode text-blue-600 mb-1"></i>
+                            <span class="text-[10px] font-bold text-slate-700">Chuyển Khoản QR</span>
+                        </label>
+                        <label class="flex flex-col items-center justify-center p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-center">
+                            <input type="radio" name="paymentMethod" value="momo" class="text-kfc-red focus:ring-kfc-red mb-1">
+                            <i class="fa-solid fa-wallet text-pink-600 mb-1"></i>
+                            <span class="text-[10px] font-bold text-slate-700">MoMo / ZaloPay</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="block text-[10px] text-slate-400 font-bold uppercase">Tổng hóa đơn:</span>
+                        <span id="checkoutTotal" class="text-xl font-black text-kfc-red">0đ</span>
+                    </div>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-green-600/25 transition-all flex items-center space-x-2 text-xs sm:text-sm uppercase">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Đặt Hàng Ngay</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-kfc-dark text-slate-400 pt-12 pb-8 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 text-white font-black text-2xl tracking-tighter mb-3">
+                        <div class="w-8 h-8 bg-kfc-red rounded-xl flex items-center justify-center text-sm font-black">KFC</div>
+                        <span>KFC Việt Nam</span>
+                    </div>
+                    <p class="text-xs leading-relaxed text-slate-400">
+                        KFC Việt Nam - Chuỗi nhà hàng phục vụ gà rán tươi ngon hàng đầu. Mang đến hương vị Gà Giòn Cay truyền thống cùng khoai tây chiên, bánh trứng thơm béo.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-black text-xs uppercase tracking-wider mb-3">Thực Đơn Nổi Bật</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" onclick="filterByCategory('chicken')" class="hover:text-kfc-red transition-colors">Gà Rán Giòn Cay & Truyền Thống</a></li>
+                        <li><a href="#" onclick="filterByCategory('combos')" class="hover:text-kfc-red transition-colors">Combo Cá Nhân & Gia Đình</a></li>
+                        <li><a href="#" onclick="filterByCategory('burgers')" class="hover:text-kfc-red transition-colors">Burger Zinger & Cơm Gà</a></li>
+                        <li><a href="#" onclick="filterByCategory('sides')" class="hover:text-kfc-red transition-colors">Bánh Trứng Egg Tart & Khoai Tây Chiên</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-black text-xs uppercase tracking-wider mb-3">Chăm Sóc Khách Hàng</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><span class="text-slate-400">Thời gian mở cửa: 09:00 - 22:00</span></li>
+                        <li><span class="text-slate-400">Giao hàng tận nơi hỏa tốc</span></li>
+                        <li><span class="text-slate-400">Cam kết an toàn thực phẩm 100%</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-black text-xs uppercase tracking-wider mb-3">Hotline Đặt Món</h4>
+                    <p class="text-2xl font-black text-kfc-red mb-1">1900 6886</p>
+                    <p class="text-[11px] text-slate-500">Phục vụ từ 09:00 đến 21:30 hàng ngày</p>
+                </div>
+            </div>
+            <div class="pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
+                <p>&copy; 2026 KFC Việt Nam. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT APP LOGIC ==================== -->
+    <script>
+        // 1. PRODUCTS DATA
+        const PRODUCTS = [
+            // ---------- GÀ RÁN (Fried Chicken) ----------
+            {
+                id: 1,
+                name: "Gà Giòn Cay KFC",
+                engName: "Crispy Spicy Chicken",
+                category: "chicken",
+                categoryName: "Gà Rán",
+                price: 38000,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=800&q=80",
+                desc: "Miếng gà tươi tẩm bột chiên xù giòn rụm bên ngoài, mọng nước đậm đà cay nhẹ bên trong.",
+                hasFlavorChoice: true
+            },
+            {
+                id: 2,
+                name: "Gà Truyền Thống 11 Vị Thảo Mộc",
+                engName: "Original Recipe Chicken",
+                category: "chicken",
+                categoryName: "Gà Rán",
+                price: 38000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=80",
+                desc: "Công thức độc quyền 11 loại thảo mộc & gia vị của Đại Tá Sanders, giữ trọn độ mềm đậm đà.",
+                hasFlavorChoice: true
+            },
+            {
+                id: 3,
+                name: "Gà Sốt Đậu Soy Garlic",
+                engName: "Soy Garlic Glazed Chicken",
+                category: "chicken",
+                categoryName: "Gà Rán",
+                price: 42000,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=800&q=80",
+                desc: "Gà rán giòn phủ lớp sốt đậu tỏi Hàn Quốc sánh mịn, mặn ngọt đậm đà cuốn hút.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 4,
+                name: "Gà Sốt Phô Mai Béo Ngậy",
+                engName: "Cheese Glazed Chicken",
+                category: "chicken",
+                categoryName: "Gà Rán",
+                price: 42000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80",
+                desc: "Lớp sốt phô mai tan chảy béo ngậy phủ đều lên miếng gà chiên giòn tan.",
+                hasFlavorChoice: false
+            },
+
+            // ---------- COMBOS ----------
+            {
+                id: 5,
+                name: "Combo Gà Rán 1 Người",
+                engName: "Solo Fried Chicken Combo",
+                category: "combos",
+                categoryName: "Combos",
+                price: 89000,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+                desc: "Bao gồm: 2 Miếng Gà Rán + 1 Khoai Tây Chiên (Vừa) + 1 Pepsi Lon 320ml.",
+                hasFlavorChoice: true
+            },
+            {
+                id: 6,
+                name: "Combo Gia Đình Thịnh Vượng",
+                engName: "Family Feast Bucket Combo",
+                category: "combos",
+                categoryName: "Combos",
+                price: 249000,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=800&q=80",
+                desc: "Bao gồm: 5 Miếng Gà Rán + 1 Burger Zinger + 1 Bắp Cải Trộn + 2 Pepsi Lon.",
+                hasFlavorChoice: true
+            },
+            {
+                id: 7,
+                name: "Bucket Gà Rán 6 Miếng",
+                engName: "6 Pcs Chicken Bucket",
+                category: "combos",
+                categoryName: "Combos",
+                price: 215000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=800&q=80",
+                desc: "Xô 6 miếng gà rán tự chọn vị (Giòn Cay / Truyền Thống) tiết kiệm tối đa.",
+                hasFlavorChoice: true
+            },
+
+            // ---------- BURGER & RICE ----------
+            {
+                id: 8,
+                name: "Burger Zinger Tôm/Gà",
+                engName: "Signature Zinger Burger",
+                category: "burgers",
+                categoryName: "Burger & Cơm",
+                price: 54000,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80",
+                desc: "Burger thần thánh với miếng ức gà chiên giòn cay nguyên tảng, sốt Mayonnaise béo ngậy và xà lách tươi.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 9,
+                name: "Burger Tôm KFC",
+                engName: "KFC Shrimp Burger",
+                category: "burgers",
+                categoryName: "Burger & Cơm",
+                price: 45000,
+                rating: 4.7,
+                image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
+                desc: "Lớp nhân tôm chiên xù giòn tan quyện cùng sốt Tartar đặc trưng đậm đà.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 10,
+                name: "Cơm Gà Giòn Cay KFC",
+                engName: "Crispy Chicken Rice Bowl",
+                category: "burgers",
+                categoryName: "Burger & Cơm",
+                price: 49000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=800&q=80",
+                desc: "Cơm trắng dẻo thơm ăn kèm đùi/cánh gà giòn cay, canh súp & dưa leo tươi.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 11,
+                name: "Cơm Gà Sốt Đậu Hạt Điều",
+                engName: "Soy Garlic Chicken Rice Bowl",
+                category: "burgers",
+                categoryName: "Burger & Cơm",
+                price: 52000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80",
+                desc: "Cơm trắng nóng hổi phủ gà sốt đậu mặn ngọt đậm đà và rau củ tươi ngon.",
+                hasFlavorChoice: false
+            },
+
+            // ---------- SIDES & DESSERTS ----------
+            {
+                id: 12,
+                name: "Bánh Trứng Egg Tart (Hộp 4 Bánh)",
+                engName: "Famous KFC Egg Tart (4 Pcs)",
+                category: "sides",
+                categoryName: "Món Phụ",
+                price: 62000,
+                rating: 5.0,
+                image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80",
+                desc: "Vỏ bánh ngàn lớp giòn xốp thơm lừng bơ, lớp kem trứng custard mềm mịn tan chảy nóng hổi.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 13,
+                name: "Khoai Tây Chiên (Lớn)",
+                engName: "French Fries (Large)",
+                category: "sides",
+                categoryName: "Món Phụ",
+                price: 28000,
+                rating: 4.7,
+                image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=800&q=80",
+                desc: "Khoai tây chiên giòn rụm bên ngoài, bùi bùi bên trong rắc muối nhẹ.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 14,
+                name: "Bắp Cải Trộn Coleslaw",
+                engName: "Coleslaw Salad",
+                category: "sides",
+                categoryName: "Món Phụ",
+                price: 22000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1625944230945-1b7dd3b949ab?auto=format&fit=crop&w=800&q=80",
+                desc: "Bắp cải tươi bào sợi ngâm sốt mayonnaise chua ngọt chống ngấy hoàn hảo.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 15,
+                name: "Thanh Phô Mai Chiên Giòn (3 Thanh)",
+                engName: "Crispy Cheese Sticks (3 Pcs)",
+                category: "sides",
+                categoryName: "Món Phụ",
+                price: 35000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1531749668029-2db88e4276c7?auto=format&fit=crop&w=800&q=80",
+                desc: "Thanh phô mai Mozzarella bọc bột xù chiên vàng, kéo sợi béo ngậy dẻo thơm.",
+                hasFlavorChoice: false
+            },
+
+            // ---------- DRINKS ----------
+            {
+                id: 16,
+                name: "Pepsi Zero Sugar Lon 320ml",
+                engName: "Pepsi Zero Sugar Can",
+                category: "drinks",
+                categoryName: "Đồ Uống",
+                price: 18000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=800&q=80",
+                desc: "Nước ngọt có ga không đường sảng khoái mát lạnh tuyệt đỉnh.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 17,
+                name: "Pepsi Lon 320ml",
+                engName: "Pepsi Can",
+                category: "drinks",
+                categoryName: "Đồ Uống",
+                price: 18000,
+                rating: 4.8,
+                image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=800&q=80",
+                desc: "Pepsi truyền thống có ga mát lạnh sảng khoái.",
+                hasFlavorChoice: false
+            },
+            {
+                id: 18,
+                name: "Trà Lipton Chanh Mát Lạnh",
+                engName: "Lipton Iced Lemon Tea",
+                category: "drinks",
+                categoryName: "Đồ Uống",
+                price: 20000,
+                rating: 4.9,
+                image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
+                desc: "Trà chanh Lipton chua ngọt thanh mát giải nhiệt tuyệt vời.",
+                hasFlavorChoice: false
+            }
+        ];
+
+        const CATEGORIES = [
+            { id: "all", name: "Tất Cả Món", icon: "fa-utensils" },
+            { id: "chicken", name: "Gà Rán", icon: "fa-drumstick-bite" },
+            { id: "combos", name: "Combos", icon: "fa-box-open" },
+            { id: "burgers", name: "Burger & Cơm", icon: "fa-burger" },
+            { id: "sides", name: "Món Phụ & Tráng Miệng", icon: "fa-cookie-bite" },
+            { id: "drinks", name: "Đồ Uống", icon: "fa-glass-water" }
+        ];
+
+        const FIXED_DELIVERY_FEE = 15000;
+
+        // 2. STATE
+        let currentCategory = "all";
+        let searchQuery = "";
+        let cart = [];
+        let activeProductForModal = null;
+        let activeQtyInModal = 1;
+
+        // 3. INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCategoryTabs();
+            renderProducts();
+            updateCartUI();
+        });
+
+        function formatVND(val) {
+            return val.toLocaleString('vi-VN') + 'đ';
+        }
+
+        // 4. RENDER TABS
+        function renderCategoryTabs() {
+            const container = document.getElementById('categoryFilterButtons');
+            container.innerHTML = CATEGORIES.map(cat => {
+                const isActive = cat.id === currentCategory;
+                const activeClasses = isActive 
+                    ? "bg-kfc-red text-white shadow-md shadow-red-500/20" 
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200";
+
+                return `
+                    <button 
+                        onclick="filterByCategory('${cat.id}')"
+                        class="flex items-center space-x-2 px-4 py-2.5 rounded-2xl font-black text-xs whitespace-nowrap transition-all duration-200 ${activeClasses}"
+                    >
+                        <i class="fa-solid ${cat.icon}"></i>
+                        <span>${cat.name}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // 5. RENDER PRODUCTS GRID
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            const filtered = PRODUCTS.filter(p => {
+                const matchesCat = (currentCategory === "all") || (p.category === currentCategory);
+                const q = searchQuery.toLowerCase();
+                const matchesSearch = p.name.toLowerCase().includes(q) || 
+                                      p.engName.toLowerCase().includes(q) ||
+                                      p.desc.toLowerCase().includes(q);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = "";
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(item => {
+                return `
+                    <div class="bg-white rounded-3xl overflow-hidden border border-kfc-cardBorder shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-200">
+                        
+                        <!-- Image -->
+                        <div class="relative h-48 overflow-hidden cursor-pointer" onclick="openDetailModal(${item.id})">
+                            <img 
+                                src="${item.image}" 
+                                alt="${item.name}" 
+                                onerror="handleImgError(this)"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                loading="lazy"
+                            >
+                            <div class="absolute top-3 left-3">
+                                <span class="bg-kfc-dark/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow">
+                                    ${item.categoryName}
+                                </span>
+                            </div>
+                            <div class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-amber-400 text-xs font-black px-2.5 py-1 rounded-xl flex items-center space-x-1 shadow">
+                                <i class="fa-solid fa-star text-amber-400"></i>
+                                <span>${item.rating}</span>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <h3 
+                                    onclick="openDetailModal(${item.id})" 
+                                    class="font-black text-slate-900 text-base font-sans hover:text-kfc-red transition-colors cursor-pointer line-clamp-1"
+                                >
+                                    ${item.name}
+                                </h3>
+                                <p class="text-slate-400 text-[11px] italic line-clamp-1">
+                                    ${item.engName}
+                                </p>
+                                <p class="text-slate-500 text-xs line-clamp-2 mt-1.5 leading-relaxed">
+                                    ${item.desc}
+                                </p>
+                            </div>
+
+                            <!-- Price & Action -->
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                                <div>
+                                    <span class="block text-[9px] text-slate-400 uppercase font-black">Giá bán</span>
+                                    <span class="text-base font-black text-kfc-red">${formatVND(item.price)}</span>
+                                </div>
+                                <button 
+                                    onclick="openDetailModal(${item.id})"
+                                    class="bg-red-50 hover:bg-kfc-red text-kfc-red hover:text-white px-3.5 py-2 rounded-xl transition-all duration-200 active:scale-95 shadow-xs flex items-center space-x-1 font-extrabold text-xs"
+                                >
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                    <span>Thêm Món</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 6. FILTERS & SEARCH
+        function filterByCategory(catId) {
+            currentCategory = catId;
+            renderCategoryTabs();
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.trim();
+            renderProducts();
+        }
+
+        function handleMobileSearch() {
+            searchQuery = document.getElementById('mobileSearchInput').value.trim();
+            renderProducts();
+        }
+
+        // 7. ITEM DETAIL MODAL
+        function openDetailModal(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            activeProductForModal = product;
+            activeQtyInModal = 1;
+
+            document.getElementById('detailImg').src = product.image;
+            document.getElementById('detailTitle').textContent = product.name;
+            document.getElementById('detailEngTitle').textContent = product.engName;
+            document.getElementById('detailPrice').textContent = formatVND(product.price);
+            document.getElementById('detailDesc').textContent = product.desc;
+            document.getElementById('detailCategoryBadge').textContent = product.categoryName;
+            document.getElementById('specialNote').value = "";
+            document.getElementById('detailQty').textContent = activeQtyInModal;
+
+            // Flavor options
+            const flavorBox = document.getElementById('flavorOptionContainer');
+            if (product.hasFlavorChoice) {
+                flavorBox.classList.remove('hidden');
+            } else {
+                flavorBox.classList.add('hidden');
+            }
+
+            updateDetailTotalDisplay();
+
+            document.getElementById('detailAddToCartBtn').onclick = () => {
+                submitModalToCart();
+            };
+
+            const modal = document.getElementById('itemDetailModal');
+            const card = document.getElementById('detailModalCard');
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('itemDetailModal');
+            const card = document.getElementById('detailModalCard');
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function changeDetailQty(delta) {
+            activeQtyInModal += delta;
+            if (activeQtyInModal < 1) activeQtyInModal = 1;
+            document.getElementById('detailQty').textContent = activeQtyInModal;
+            updateDetailTotalDisplay();
+        }
+
+        function updateDetailTotalDisplay() {
+            if (!activeProductForModal) return;
+            const total = activeProductForModal.price * activeQtyInModal;
+            document.getElementById('detailTotalCalculated').textContent = formatVND(total);
+        }
+
+        function submitModalToCart() {
+            if (!activeProductForModal) return;
+
+            let flavor = "";
+            if (activeProductForModal.hasFlavorChoice) {
+                const selectedRadio = document.querySelector('input[name="flavorChoice"]:checked');
+                if (selectedRadio) flavor = selectedRadio.value;
+            }
+
+            const note = document.getElementById('specialNote').value.trim();
+
+            addToCartWithCustoms(activeProductForModal, activeQtyInModal, flavor, note);
+            closeDetailModal();
+        }
+
+        // 8. CART LOGIC
+        function addToCartWithCustoms(product, qty, flavor, note) {
+            const cartItemKey = `${product.id}_${flavor}_${note}`;
+            const existing = cart.find(item => item.key === cartItemKey);
+
+            if (existing) {
+                existing.quantity += qty;
+            } else {
+                cart.push({
+                    key: cartItemKey,
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    flavor: flavor,
+                    note: note,
+                    quantity: qty
+                });
+            }
+
+            updateCartUI();
+            showToast(`Đã thêm ${qty}x "${product.name}" vào giỏ hàng!`, "success");
+        }
+
+        function updateCartItemQty(key, delta) {
+            const item = cart.find(i => i.key === key);
+            if (!item) return;
+
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                removeFromCart(key);
+            } else {
+                updateCartUI();
+            }
+        }
+
+        function removeFromCart(key) {
+            cart = cart.filter(i => i.key !== key);
+            updateCartUI();
+            showToast("Đã xóa món khỏi giỏ", "info");
+        }
+
+        function updateCartUI() {
+            const totalCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+            const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const total = subtotal > 0 ? subtotal + FIXED_DELIVERY_FEE : 0;
+
+            // Badge
+            const badge = document.getElementById('cartBadge');
+            badge.textContent = totalCount;
+            if (totalCount > 0) {
+                badge.classList.remove('scale-0');
+                badge.classList.add('scale-100');
+            } else {
+                badge.classList.remove('scale-100');
+                badge.classList.add('scale-0');
+            }
+
+            document.getElementById('cartCountTitle').textContent = `${totalCount} món`;
+
+            // Cart Items Render
+            const cartList = document.getElementById('cartItemsList');
+            const emptyState = document.getElementById('cartEmptyState');
+            const cartFooter = document.getElementById('cartFooter');
+
+            if (cart.length === 0) {
+                cartList.innerHTML = "";
+                emptyState.classList.remove('hidden');
+                cartFooter.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                cartFooter.classList.remove('hidden');
+
+                cartList.innerHTML = cart.map(item => `
+                    <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                        <img src="${item.image}" alt="${item.name}" onerror="handleImgError(this)" class="w-16 h-16 rounded-xl object-cover shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs font-black text-slate-900 truncate">${item.name}</h4>
+                            
+                            ${item.flavor ? `<span class="inline-block bg-red-100 text-kfc-red text-[9px] font-bold px-2 py-0.5 rounded mt-0.5"><i class="fa-solid fa-pepper-hot mr-1"></i>Vị: ${item.flavor}</span>` : ''}
+                            ${item.note ? `<p class="text-[10px] text-slate-400 italic truncate mt-0.5">Note: ${item.note}</p>` : ''}
+
+                            <p class="text-xs font-black text-kfc-red mt-1">${formatVND(item.price)}</p>
+
+                            <div class="flex items-center space-x-2 mt-2">
+                                <button onclick="updateCartItemQty('${item.key}', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-100 text-xs">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <span class="text-xs font-black text-slate-800 w-4 text-center">${item.quantity}</span>
+                                <button onclick="updateCartItemQty('${item.key}', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-100 text-xs">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart('${item.key}')" class="p-2 text-slate-400 hover:text-red-500 rounded-lg transition-colors">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('subtotalPrice').textContent = formatVND(subtotal);
+            document.getElementById('totalPrice').textContent = formatVND(total);
+            document.getElementById('checkoutTotal').textContent = formatVND(total);
+        }
+
+        function toggleCartModal(show) {
+            const modal = document.getElementById('cartModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        // 9. CHECKOUT LOGIC
+        function openCheckoutModal() {
+            if (cart.length === 0) return;
+            toggleCartModal(false);
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        function handleOrderSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+
+            if (!name || !phone || !address) {
+                showToast("Vui lòng điền đầy đủ thông tin nhận hàng!", "warning");
+                return;
+            }
+
+            cart = [];
+            updateCartUI();
+            closeCheckoutModal();
+            document.getElementById('orderForm').reset();
+
+            showToast("🍗 Đặt hàng thành công! Đội ngũ KFC đang chế biến hỏa tốc cho bạn.", "success");
+        }
+
+        // 10. TOAST SYSTEM
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            const bgClass = type === "success" 
+                ? "bg-slate-900 text-white border-l-4 border-kfc-red" 
+                : "bg-slate-900 text-white border-l-4 border-amber-500";
+
+            const iconClass = type === "success" ? "fa-circle-check text-kfc-red" : "fa-circle-info text-amber-400";
+
+            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold transform transition-all duration-300 translate-y-4 opacity-0 ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-sm"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+    </script>
+</body>
+</html>
